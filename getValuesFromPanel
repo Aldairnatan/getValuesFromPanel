@@ -1,0 +1,168 @@
+package classe;
+
+import java.awt.Color;
+import java.awt.Component;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.ButtonGroup;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.JViewport;
+import views.JFRegisterUser;
+
+public class PegaValores {
+
+    //Atribudo Object que será retornado ao final da execução do metodo. como objeto da classe.
+    private Object classe;
+    //Receberá os atributos da classe passada por parâmetro
+    private Field[] fields;
+    //Receberá os metodos da classe passada por parametro
+    private Method[] methods;
+
+    /**
+     *
+     * @param panel - dentro deste JPanel contem TextFields, ele será varrido
+     * até encontrar todos campos que tem nome igual ao atributo da classe
+     * passada por parametro (nomeClasse).
+     * @param nomeClasse - String que contém o nome da classe a ser instanciada
+     * para executar os metodos SETTER para possivel cadastro.
+     *
+     * @return um Object da classe passada por parametro.
+     */
+    public Object pega(JPanel panel, String nomeClasse) {
+        try {
+
+            //Instancia a Classe passada por parãmetro
+            classe = retornaClasse(nomeClasse);
+
+            //Obtem todos os atributos da classe
+            fields = classe.getClass().getDeclaredFields();
+
+            //obtem todos os metodos da Classe
+            methods = classe.getClass().getDeclaredMethods();
+
+            //obtem todos os componentes de tela do Painel Passado por parametro
+            Component[] components = panel.getComponents();
+
+            for (int i = 0; i < components.length; i++) {
+                //verifica se é instancia de JTextField
+                if (components[i] instanceof JTextField) {
+                    getValueJTextField(components[i]);
+                } else if (components[i] instanceof JScrollPane) {
+                    getValueJTextArea(components[i]);
+                } else if (components[i] instanceof JRadioButton) {
+                    getSelectedRadioButton(components[i]);
+                }
+            }
+        } catch (NoSuchMethodException ex) {
+            Logger.getLogger(JFRegisterUser.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            Logger.getLogger(JFRegisterUser.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IllegalArgumentException ex) {
+            Logger.getLogger(JFRegisterUser.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (InvocationTargetException ex) {
+            Logger.getLogger(JFRegisterUser.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        //retorna um objeto da classe passada por parâmetro
+        return classe;
+    }
+
+    public void getSelectedRadioButton(Component component) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        JRadioButton radioButton = (JRadioButton) component;
+        int controlador = 0;
+        for (Field field : fields) {
+            if (radioButton.getName().equals(field.getName()) && !radioButton.getName().equals("") && radioButton.isSelected() == true) {
+                String nomeAtributo = field.getName();
+                for (Method method : methods) {
+                    if (method.getName().equals("set" + primeiraMaiuscula(nomeAtributo))) {
+                        Method metodo = classe.getClass().getMethod("set" + primeiraMaiuscula(nomeAtributo), method.getParameterTypes());
+                        metodo.invoke(classe, radioButton.getActionCommand());
+                        controlador = 1;
+                        break;
+                    }
+                }
+            }
+            if (controlador == 1) {
+                break;
+            }
+        }
+    }
+
+    public void getValueJTextField(Component component) throws IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
+        JTextField text = (JTextField) component;
+        int controlador = 0;
+        for (int j = 0; j < fields.length; j++) {
+            if (text.getName().equals(fields[j].getName())) {
+                String nomeAtributo = fields[j].getName().toString();
+                for (int k = 0; k < methods.length; k++) {
+                    if (methods[k].getName().equals("set" + primeiraMaiuscula(nomeAtributo))) {
+                        Method metodo = classe.getClass().getMethod("set" + primeiraMaiuscula(nomeAtributo), methods[k].getParameterTypes());
+                        metodo.invoke(classe, text.getText());
+                        controlador = 1;
+                        break;
+                    }
+                }
+            }
+            if (controlador == 1) {
+                break;
+            }
+        }
+    }
+
+    public void getValueJTextArea(Component component) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+
+        JScrollPane scrollPane = (JScrollPane) component;
+        JTextArea text = new JTextArea();
+        int controlador = 0;
+        Component c[] = scrollPane.getComponents();
+
+        for (int i = 0; i < c.length; i++) {
+            if (c[i] instanceof JViewport) {
+                JViewport v = (JViewport) c[i];
+                if (v.getComponent(0) instanceof JTextArea) {
+                    text = (JTextArea) v.getComponent(0);
+
+                    for (int j = 0; j < fields.length; j++) {
+                        if (text.getName().equals(fields[j].getName())) {
+                            String nomeAtributo = fields[j].getName().toString();
+                            for (int k = 0; k < methods.length; k++) {
+                                if (methods[k].getName().equals("set" + primeiraMaiuscula(nomeAtributo))) {
+                                    Method metodo = classe.getClass().getMethod("set" + primeiraMaiuscula(nomeAtributo), methods[k].getParameterTypes());
+                                    metodo.invoke(classe, text.getText());
+                                    controlador = 1;
+                                    break;
+                                }
+                            }
+                        }
+                        if (controlador == 1) {
+                            break;
+                        }
+                    }
+                }
+            }
+            if (controlador == 1) {
+                break;
+            }
+        }
+    }
+
+    public static String primeiraMaiuscula(String palavra) {
+        return palavra.substring(0, 1).toUpperCase() + palavra.substring(1);
+    }
+
+    public Object retornaClasse(String nomeClasse) {
+        try {
+            return (Class.forName("classe." + nomeClasse)).newInstance();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
+    }
+}
