@@ -16,7 +16,7 @@ import javax.swing.JTextField;
 import javax.swing.JViewport;
 import views.JFRegisterUser;
 
-public class PegaValores {
+public class getValuesFromPanel {
 
     //Atribudo Object que será retornado ao final da execução do metodo. como objeto da classe.
     private Object classe;
