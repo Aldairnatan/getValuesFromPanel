@@ -8,15 +8,36 @@ import java.lang.reflect.Method;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFormattedTextField;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JViewport;
 import views.JFRegisterUser;
 
-public class getValuesFromPanel {
+/**
+ * Componentes utilizaveis nesta classe:
+ * 
+ * 1 - JCheckBox;
+ * 2 - JComboBox;
+ * 3 - JFormattedTextField;
+ * 4 - JPasswordField;
+ * 5 - JRadioButton;
+ * 6 - JScrollPane;
+ * 7 - JSpinner;
+ * 8 - JTextArea;
+ * 9 - JTextField;
+ * 
+ * @author Aldair Natan
+ */
+
+public class GetValuesFromJPanel {
 
     //Atribudo Object que será retornado ao final da execução do metodo. como objeto da classe.
     private Object classe;
@@ -58,6 +79,16 @@ public class getValuesFromPanel {
                     getValueJTextArea(components[i]);
                 } else if (components[i] instanceof JRadioButton) {
                     getSelectedRadioButton(components[i]);
+                }else if(components[i] instanceof JComboBox){
+                    getSelectedComboBox(components[i]);
+                }else if(components[i] instanceof JFormattedTextField){
+                    getValueFormatText(components[i]);
+                }else if(components[i] instanceof JPasswordField){
+                    getValuePassword(components[i]);
+                }else if(components[i] instanceof JSpinner){
+                    getValueSpinner(components[i]);
+                }else if(components[i] instanceof JCheckBox){
+                    getSelectedCheckBox(components[i]);
                 }
             }
         } catch (NoSuchMethodException ex) {
@@ -74,6 +105,110 @@ public class getValuesFromPanel {
         return classe;
     }
 
+    public void getSelectedCheckBox(Component component) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+        JCheckBox checkbox = (JCheckBox) component;
+        int controlador = 0;
+        for (Field field : fields) {
+            if (checkbox.getName().equals(field.getName()) && checkbox.isSelected()) {
+                String nomeAtributo = field.getName();
+                for (Method method : methods) {
+                    if (method.getName().equals("set" + primeiraMaiuscula(nomeAtributo))) {
+                        Method metodo = classe.getClass().getMethod("set" + primeiraMaiuscula(nomeAtributo), method.getParameterTypes());
+                        metodo.invoke(classe, checkbox.getActionCommand());
+                        controlador = 1;
+                        break;
+                    }
+                }
+            }
+            if (controlador == 1) {
+                break;
+            }
+        }
+    }
+    
+    public void getValueSpinner(Component component) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException{
+        JSpinner spinner = (JSpinner) component;
+        int controlador = 0;
+        for (Field field : fields) {
+            if (spinner.getName().equals(field.getName())) {
+                String nomeAtributo = field.getName();
+                for (Method method : methods) {
+                    if (method.getName().equals("set" + primeiraMaiuscula(nomeAtributo))) {
+                        Method metodo = classe.getClass().getMethod("set" + primeiraMaiuscula(nomeAtributo), method.getParameterTypes());
+                        metodo.invoke(classe, spinner.getValue());
+                        controlador = 1;
+                        break;
+                    }
+                }
+            }
+            if (controlador == 1) {
+                break;
+            }
+        }
+    }
+    
+    private void getValuePassword(Component component) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        JPasswordField text = (JPasswordField) component;
+        int controlador = 0;
+        for (Field field : fields) {
+            if (text.getName().equals(field.getName())) {
+                String nomeAtributo = field.getName();
+                for (Method method : methods) {
+                    if (method.getName().equals("set" + primeiraMaiuscula(nomeAtributo))) {
+                        Method metodo = classe.getClass().getMethod("set" + primeiraMaiuscula(nomeAtributo), method.getParameterTypes());
+                        metodo.invoke(classe, text.getText());
+                        controlador = 1;
+                        break;
+                    }
+                }
+            }
+            if (controlador == 1) {
+                break;
+            }
+        }
+    }
+    
+    public void getValueFormatText(Component component) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+        JFormattedTextField text = (JFormattedTextField) component;
+        int controlador = 0;
+        for (Field field : fields) {
+            if (text.getName().equals(field.getName())) {
+                String nomeAtributo = field.getName();
+                for (Method method : methods) {
+                    if (method.getName().equals("set" + primeiraMaiuscula(nomeAtributo))) {
+                        Method metodo = classe.getClass().getMethod("set" + primeiraMaiuscula(nomeAtributo), method.getParameterTypes());
+                        metodo.invoke(classe, text.getText());
+                        controlador = 1;
+                        break;
+                    }
+                }
+            }
+            if (controlador == 1) {
+                break;
+            }
+        }
+    }
+    
+    public void getSelectedComboBox(Component component) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
+        JComboBox comboBox = (JComboBox) component;
+        int controlador = 0;
+        for (Field field : fields) {
+            if (comboBox.getName().equals(field.getName()) && comboBox.getSelectedIndex() != 0 ) {
+                String nomeAtributo = field.getName();
+                for (Method method : methods) {
+                    if (method.getName().equals("set" + primeiraMaiuscula(nomeAtributo))) {
+                        Method metodo = classe.getClass().getMethod("set" + primeiraMaiuscula(nomeAtributo), method.getParameterTypes());
+                        metodo.invoke(classe, comboBox.getSelectedItem());
+                        controlador = 1;
+                        break;
+                    }
+                }
+            }
+            if (controlador == 1) {
+                break;
+            }
+        }
+    }    
     public void getSelectedRadioButton(Component component) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         JRadioButton radioButton = (JRadioButton) component;
         int controlador = 0;
@@ -98,12 +233,12 @@ public class getValuesFromPanel {
     public void getValueJTextField(Component component) throws IllegalAccessException, NoSuchMethodException, IllegalArgumentException, InvocationTargetException {
         JTextField text = (JTextField) component;
         int controlador = 0;
-        for (int j = 0; j < fields.length; j++) {
-            if (text.getName().equals(fields[j].getName())) {
-                String nomeAtributo = fields[j].getName().toString();
-                for (int k = 0; k < methods.length; k++) {
-                    if (methods[k].getName().equals("set" + primeiraMaiuscula(nomeAtributo))) {
-                        Method metodo = classe.getClass().getMethod("set" + primeiraMaiuscula(nomeAtributo), methods[k].getParameterTypes());
+        for (Field field : fields) {
+            if (text.getName().equals(field.getName())) {
+                String nomeAtributo = field.getName();
+                for (Method method : methods) {
+                    if (method.getName().equals("set" + primeiraMaiuscula(nomeAtributo))) {
+                        Method metodo = classe.getClass().getMethod("set" + primeiraMaiuscula(nomeAtributo), method.getParameterTypes());
                         metodo.invoke(classe, text.getText());
                         controlador = 1;
                         break;
@@ -119,22 +254,22 @@ public class getValuesFromPanel {
     public void getValueJTextArea(Component component) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 
         JScrollPane scrollPane = (JScrollPane) component;
-        JTextArea text = new JTextArea();
+        JTextArea text;
         int controlador = 0;
         Component c[] = scrollPane.getComponents();
 
-        for (int i = 0; i < c.length; i++) {
-            if (c[i] instanceof JViewport) {
-                JViewport v = (JViewport) c[i];
+        for (Component c1 : c) {
+            if (c1 instanceof JViewport) {
+                JViewport v = (JViewport) c1;
                 if (v.getComponent(0) instanceof JTextArea) {
                     text = (JTextArea) v.getComponent(0);
 
-                    for (int j = 0; j < fields.length; j++) {
-                        if (text.getName().equals(fields[j].getName())) {
-                            String nomeAtributo = fields[j].getName().toString();
-                            for (int k = 0; k < methods.length; k++) {
-                                if (methods[k].getName().equals("set" + primeiraMaiuscula(nomeAtributo))) {
-                                    Method metodo = classe.getClass().getMethod("set" + primeiraMaiuscula(nomeAtributo), methods[k].getParameterTypes());
+                    for (Field field : fields) {
+                        if (text.getName().equals(field.getName())) {
+                            String nomeAtributo = field.getName();
+                            for (Method method : methods) {
+                                if (method.getName().equals("set" + primeiraMaiuscula(nomeAtributo))) {
+                                    Method metodo = classe.getClass().getMethod("set" + primeiraMaiuscula(nomeAtributo), method.getParameterTypes());
                                     metodo.invoke(classe, text.getText());
                                     controlador = 1;
                                     break;
@@ -153,6 +288,7 @@ public class getValuesFromPanel {
         }
     }
 
+    
     public static String primeiraMaiuscula(String palavra) {
         return palavra.substring(0, 1).toUpperCase() + palavra.substring(1);
     }
